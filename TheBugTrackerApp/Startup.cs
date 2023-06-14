@@ -13,6 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheBugTrackerApp.Data;
 using TheBugTrackerApp.Models;
+using TheBugTrackerApp.Services;
+using TheBugTrackerApp.Services.Interfaces;
 
 namespace TheBugTrackerApp
 {
@@ -39,7 +41,11 @@ namespace TheBugTrackerApp
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
-
+            services.AddScoped<IBTRolesService, BTRolesService>();
+            services.AddScoped<IBTCompanyInfoService, BTCompanyInfoService>();
+            services.AddScoped<IBTProjectService, BTProjectService>();
+            services.AddScoped<IBTTicketService, BTTicketService>();
+            services.AddScoped<IBTTicketHistoryService,BTTicketHistoryService>();
             services.AddControllersWithViews();
         }
 
