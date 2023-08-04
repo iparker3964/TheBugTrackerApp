@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 using TheBugTrackerApp.Data;
 using TheBugTrackerApp.Models;
 using TheBugTrackerApp.Services;
+using TheBugTrackerApp.Services.Factories;
 using TheBugTrackerApp.Services.Interfaces;
 
 namespace TheBugTrackerApp
@@ -31,13 +33,13 @@ namespace TheBugTrackerApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(DataUtility.GetConnectionString(Configuration), o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddIdentity<BTUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
@@ -46,6 +48,13 @@ namespace TheBugTrackerApp
             services.AddScoped<IBTProjectService, BTProjectService>();
             services.AddScoped<IBTTicketService, BTTicketService>();
             services.AddScoped<IBTTicketHistoryService,BTTicketHistoryService>();
+            services.AddScoped<IEmailSender, BTEmailService>();
+            services.AddScoped<IBTNotificationService, BTNotificationService>();
+            services.AddScoped<IBTInviteService,BTInviteService>();
+            services.AddScoped<IBTFileService, BTFileService>();
+            services.AddScoped<IBTLookupService, BTLookupService>();
+
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
             services.AddControllersWithViews();
         }
 

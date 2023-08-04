@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TheBugTrackerApp.Data;
@@ -9,9 +10,10 @@ using TheBugTrackerApp.Data;
 namespace TheBugTrackerApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230706180458_modelUpdate")]
+    partial class modelUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,7 +183,7 @@ namespace TheBugTrackerApp.Data.Migrations
                     b.Property<string>("AvatarFileName")
                         .HasColumnType("text");
 
-                    b.Property<int>("CompanyId")
+                    b.Property<int?>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -435,9 +437,6 @@ namespace TheBugTrackerApp.Data.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("Archived")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("ArchivedByProject")
                         .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("Created")
@@ -707,9 +706,7 @@ namespace TheBugTrackerApp.Data.Migrations
                 {
                     b.HasOne("TheBugTrackerApp.Models.Company", "Company")
                         .WithMany("Members")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CompanyId");
 
                     b.Navigation("Company");
                 });

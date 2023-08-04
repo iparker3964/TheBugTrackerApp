@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +21,35 @@ namespace TheBugTrackerApp.Services
             _roleManager = roleManager;
             _userManager = userManager;
         }
+        
         public async Task<bool> AddUserToRoleAsync(BTUser user, string roleName)
         {
             bool result = (await _userManager.AddToRoleAsync(user,roleName)).Succeeded;
 
             return result;
         }
+        #region Get Roles
+        public async Task<List<IdentityRole>> GetRolesAsync()
+        {
+            try
+            {
+                List<IdentityRole> result = new();
+                result = await _context.Roles.ToListAsync();
 
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("*******************");
+                Console.WriteLine("Error getting roles");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("*******************");
+
+                throw;
+            }
+
+        } 
+        #endregion
         public async Task<string> GetRoleNameByIdAsync(string roleId)
         {
             IdentityRole role = _context.Roles.Find(roleId);

@@ -33,6 +33,9 @@ namespace TheBugTrackerApp.Models
         [DisplayName("Archived")]
         public bool Archived { get; set; }
 
+        [DisplayName("Archived By Project")]
+        public bool ArchivedByProject { get; set; }
+
         //Foreign Key
         [DisplayName("Project")]
         public int ProjectId { get; set; }
@@ -47,7 +50,7 @@ namespace TheBugTrackerApp.Models
         public int TicketStatusId { get; set; }
 
         [DisplayName("Ticket Owner")]
-        public string OwnerUserId { get; set; }
+        public string? OwnerUserId { get; set; }
 
         [DisplayName("Ticket Developer")]
         public string DeveloperUserId { get; set; }

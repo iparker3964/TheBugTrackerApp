@@ -1,0 +1,35 @@
+﻿@model IEnumerable<TheBugTrackerApp.Models.ViewModels.ManageUserRolesViewModel>
+
+<div class="row">
+    <h2 class="mt-0 h3"><b>Manage Member Roels</b></h2>
+
+    @foreach (var member in Model){
+        <div class="row">
+            <div class="card col-4 m-3">
+                <div class="card-body">
+                    <p class="text-muted font-13 mb-30">
+                        This form displays the current roles assigned to the user: <strong class="text-info">@member.BTUser.FullName</strong>.
+                        Use the dropdown to select the roles this user should be assigned. 
+                        Once roles are selected, click "Assign Roles" to submit this form.
+                    </p>
+                    <hr />
+                    <form asp-action="ManageUserRoles" asp-controller="UserRoles" method="post">
+                        <input type="hidden" asp-for="@member.BTUser.Id"/>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label asp-for="@member.Roles" class="control-label">Roles for @member.BTUser.FullName</label>
+                                    <select class="form-control" asp-for="@member.SelectedRoles" asp-items="@member.Roles" multiple></select>
+                                    <hr />
+                                </div>
+                                <div class="form-group">
+                                    <input class="btn btn-info" type="submit" value="Assign Role"/>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

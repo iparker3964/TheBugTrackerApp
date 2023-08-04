@@ -13,21 +13,29 @@ namespace TheBugTrackerApp.Services
 {
     public class BTProjectService : IBTProjectService
     {
+        #region Properties
         private readonly ApplicationDbContext _context;
-        private readonly BTRolesService _rolesService;
+        private readonly IBTRolesService _rolesService;
+        #endregion
 
-        public BTProjectService(ApplicationDbContext context, BTRolesService rolesService)
+        #region Constructor
+        public BTProjectService(ApplicationDbContext context, IBTRolesService rolesService)
         {
             _context = context;
             _rolesService = rolesService;
         }
+        #endregion
+
+        #region Add New Project
         //CRUD - Create
         public async Task AddNewProjectAsync(Project project)
         {
             _context.Add(project);
             await _context.SaveChangesAsync();
         }
+        #endregion
 
+        #region Add Project Manager
         public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
         {
             BTUser currentPM = await GetProjectManagerAsync(projectId);
@@ -55,7 +63,8 @@ namespace TheBugTrackerApp.Services
                 return false;
             }
         }
-
+        #endregion
+        #region Add User To Project
         public async Task<bool> AddUserToProjectAsync(string userId, int projectId)
         {
             BTUser user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -63,7 +72,7 @@ namespace TheBugTrackerApp.Services
             if (user != null)
             {
                 Project project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
-                if (project != null && !await IsUserOnProjectAsync(userId,projectId))
+                if (project != null && !await IsUserOnProjectAsync(userId, projectId))
                 {
                     try
                     {
@@ -86,25 +95,49 @@ namespace TheBugTrackerApp.Services
                 return false;
             }
         }
+        #endregion
+
         //CRUD - Archive(Delete)
+        #region Archive Project
         public async Task ArchiveProjectAsync(Project project)
         {
-            project.Archived = true;
+            try
+            {
+                project.Archived = true;
 
-            _context.Update(project);
-            await _context.SaveChangesAsync();
+                await UpdateProjectAsync(project);
+
+                foreach (Ticket ticket in project.Tickets)
+                {
+                    ticket.ArchivedByProject = true;
+
+                    _context.Update(ticket);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("****************************");
+                Console.WriteLine("Error archiving project");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("****************************");
+            }
         }
+        #endregion
 
+        #region Get All Project Members Except Project Manager
         public async Task<List<BTUser>> GetAllProjectMembersExceptPMAsync(int projectId)
         {
-            List<BTUser> admins = await GetProjectMembersByRoleAsync(projectId,Roles.Admin.ToString());
-            List<BTUser> developers = await GetProjectMembersByRoleAsync(projectId,Roles.Developer.ToString());
-            List<BTUser> submitters = await GetProjectMembersByRoleAsync(projectId,Roles.Submitter.ToString());
+            List<BTUser> admins = await GetProjectMembersByRoleAsync(projectId, Roles.Admin.ToString());
+            List<BTUser> developers = await GetProjectMembersByRoleAsync(projectId, Roles.Developer.ToString());
+            List<BTUser> submitters = await GetProjectMembersByRoleAsync(projectId, Roles.Submitter.ToString());
 
             List<BTUser> team = admins.Concat(developers).Concat(submitters).ToList();
 
             return team;
         }
+        #endregion
+
 
         public async Task<List<Project>> GetAllProjectsByCompany(int companyId)
         {
@@ -149,9 +182,32 @@ namespace TheBugTrackerApp.Services
 
         public async Task<List<Project>> GetArchivedProjectsByCompany(int companyId)
         {
-            List<Project> projects = await GetAllProjectsByCompany(companyId);
-            
-            return projects.Where(p => p.Archived == true).ToList();
+            List<Project> projects = new();
+
+            projects = await _context.Projects.Where(p => p.CompanyId == companyId && p.Archived == true)
+                                             .Include(p => p.Members)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.Comments)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.Attachments)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.History)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.TicketStatus)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.TicketPriority)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.TicketType)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.OwnerUser)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.Notifications)
+                                             .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.DeveloperUser)
+                                             .Include(p => p.ProjectPriority)
+                                             .ToListAsync();
+
+            return projects;
         }
 
         public Task<List<BTUser>> GetDevelopersOnProjectAsync(int projectId)
@@ -163,6 +219,15 @@ namespace TheBugTrackerApp.Services
         {
             Project project = await _context.Projects
                                             .Include(p=> p.Tickets)
+                                                .ThenInclude(t => t.TicketPriority)
+                                            .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.TicketStatus)
+                                            .Include(p => p.Tickets)
+                                                .ThenInclude(t=> t.TicketType)
+                                            .Include(p => p.Tickets)
+                                                .ThenInclude(t=> t.DeveloperUser)
+                                            .Include(p => p.Tickets)
+                                                .ThenInclude(t => t.OwnerUser)
                                             .Include(p=> p.Members)
                                             .Include(p=> p.ProjectPriority)
                                             .FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
@@ -348,6 +413,32 @@ namespace TheBugTrackerApp.Services
                 throw;
             }
         }
+
+        public async Task RestoreProjectAsync(Project project)
+        {
+            try
+            {
+                project.Archived = false;
+
+                await UpdateProjectAsync(project);
+
+                foreach (Ticket ticket in project.Tickets)
+                {
+                    ticket.ArchivedByProject = false;
+
+                    _context.Update(ticket);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("****************************");
+                Console.WriteLine("Error archiving project");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("****************************");
+            }
+        }
+
         //CRUD - Update
         public async Task UpdateProjectAsync(Project project)
         {
