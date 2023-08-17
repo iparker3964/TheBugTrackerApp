@@ -75,7 +75,7 @@ namespace TheBugTrackerApp.Services
             }
         }
 
-        public async Task<List<Ticket>> GetAllTicketsByCompnayAsync(int companyId)
+        public async Task<List<Ticket>> GetAllTicketsByCompanyAsync(int companyId)
         {
            
             try
@@ -183,7 +183,7 @@ namespace TheBugTrackerApp.Services
         {
             try
             {
-                List<Ticket> tickets = (await GetAllTicketsByCompnayAsync(companyId)).Where(t => t.Archived == true).ToList();
+                List<Ticket> tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => t.Archived == true).ToList();
 
                 return tickets;
             }
@@ -286,7 +286,7 @@ namespace TheBugTrackerApp.Services
 
             try
             {
-                Ticket ticket = (await GetAllTicketsByCompnayAsync(companyId)).FirstOrDefault(t => t.Id == ticketId);
+                Ticket ticket = (await GetAllTicketsByCompanyAsync(companyId)).FirstOrDefault(t => t.Id == ticketId);
 
                 if (ticket?.DeveloperUserId != null)
                 {
@@ -310,15 +310,15 @@ namespace TheBugTrackerApp.Services
             {
                 if (role == Roles.Admin.ToString())
                 {
-                    tickets = await GetAllTicketsByCompnayAsync(companyId);
+                    tickets = await GetAllTicketsByCompanyAsync(companyId);
                 }
                 else if (role == Roles.Developer.ToString())
                 {
-                    tickets = (await GetAllTicketsByCompnayAsync(companyId)).Where(t => t.DeveloperUserId == userId).ToList();
+                    tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => t.DeveloperUserId == userId).ToList();
                 }
                 else if (role == Roles.Submitter.ToString())
                 {
-                    tickets = (await GetAllTicketsByCompnayAsync(companyId)).Where(t => t.OwnerUserId == userId).ToList();
+                    tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => t.OwnerUserId == userId).ToList();
                 }
                 else if (role == Roles.ProjectManager.ToString())
                 {
