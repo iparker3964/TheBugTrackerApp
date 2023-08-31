@@ -325,6 +325,32 @@ namespace TheBugTrackerApp.Services
 
             return users.Where(u => u.CompanyId == companyId).ToList();
         }
+        #region Is Assigned Project Manager
+        public async Task<bool> IsAssignedProjectManagerAsync(string userId, int projectId)
+        {
+            try
+            {
+                string projectManagerId = (await GetProjectManagerAsync(projectId))?.Id;
+
+                if(userId == projectManagerId)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("*********Error checking assigned project manager*********");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("***************************************************");
+                throw;
+            }
+        }
+        #endregion
+
 
         public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
         {

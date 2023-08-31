@@ -208,6 +208,7 @@ namespace TheBugTrackerApp.Data
                 var dbProjects = context.Projects.Select(p => p.Name).ToList();
 
                 await context.Projects.AddRangeAsync(projects.Where(p => !dbProjects.Contains(p.Name)));
+                
                 await context.SaveChangesAsync();
 
             }

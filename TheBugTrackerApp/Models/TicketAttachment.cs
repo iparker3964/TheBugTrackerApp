@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using TheBugTrackerApp.Extensions;
 
 namespace TheBugTrackerApp.Models
 {
@@ -23,6 +24,9 @@ namespace TheBugTrackerApp.Models
         //IFormFile allows for manipulating a file from the interface
         [NotMapped]
         [DataType(DataType.Upload)]
+        [DisplayName("Select a file")]
+        [MaxFileSize(1024 * 1024)]
+        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf",".csv" })]
         public IFormFile FormFile { get; set; }
         [DisplayName("File Name")]
         public string FileName { get; set; }

@@ -161,7 +161,6 @@
                             <hr />
                         </div>
                         <div class="body" style="overflow-y:auto;height:300px;background-color:antiquewhite">
-                            @* Project Activity loop *@
                             @foreach (TicketHistory history in await HistoryService.GetProjectTicketsHistoriesAsync(Model.Id, user.CompanyId))
                             {
                                 <div>

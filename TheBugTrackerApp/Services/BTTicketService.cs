@@ -36,6 +36,36 @@ namespace TheBugTrackerApp.Services
             }
  
         }
+        public async Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment)
+        {
+            try
+            {
+                await _context.AddAsync(ticketAttachment);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public async Task AddTicketCommentAsync(TicketComment ticketComment)
+        {
+            try
+            {
+                await _context.AddAsync(ticketComment);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("***************************");
+                Console.WriteLine("Error adding ticket comment");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("***************************");
+                throw;
+            }
+
+        }
 
         public async Task ArchiveTicketAsync(Ticket ticket)
         {
@@ -264,12 +294,37 @@ namespace TheBugTrackerApp.Services
                 throw;
             }
         }
+        public async Task<TicketAttachment> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
+        {
+            try
+            {
+                TicketAttachment ticketAttachment = await _context.TicketAttachments
+                                                                  .Include(t => t.User)
+                                                                  .FirstOrDefaultAsync(t => t.Id == ticketAttachmentId);
+                return ticketAttachment;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
         public async Task<Ticket> GetTicketByIdAsync(int ticketId)
         {
             try
             {
-                Ticket ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+                Ticket ticket = await _context.Tickets
+                                                .Include(t => t.DeveloperUser)
+                                                .Include(t => t.OwnerUser)
+                                                .Include(t => t.Project)
+                                                .Include(t => t.TicketPriority)
+                                                .Include(t => t.TicketStatus)
+                                                .Include(t => t.TicketType)
+                                                .Include(t => t.Comments)
+                                                .Include(t => t.Attachments)
+                                                .Include(t => t.History)
+                                                .FirstOrDefaultAsync(t => t.Id == ticketId);
 
                 return ticket;
             }
@@ -364,6 +419,23 @@ namespace TheBugTrackerApp.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"**** ERROR **** Error getting tickets by user id --> {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<List<Ticket>> GetUnassignedTicketsAsync(int companyId)
+        {
+            List<Ticket> tickets = new();
+
+            try
+            {
+                //tickets = (await GetTicketByIdAsync(companyId)).Where(t => t.ProjectId == projectId).ToList();
+
+                return tickets;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"**** ERROR **** Error getting project tickets by type --> {ex.Message}");
                 throw;
             }
         }

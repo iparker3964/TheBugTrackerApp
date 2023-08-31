@@ -1,15 +1,20 @@
-﻿
+﻿@using Microsoft.AspNetCore.Identity;
+@using TheBugTrackerApp.Services.Interfaces
+@using TheBugTrackerApp.Models.Enums
+
+@inject UserManager<BTUser> UserManager
+@inject IBTProjectService ProjectService
+
 @model IEnumerable<TheBugTrackerApp.Models.Ticket>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Archived Tickets";
+    BTUser user = await UserManager.GetUserAsync(User);
+
 }
 
-<h1>Index</h1>
+<h1>Archived Tickets</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -105,15 +110,20 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    @if (item.Archived)
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> 
+                    @if (User.IsInRole(nameof(Roles.Admin)) || (await ProjectService.IsAssignedProjectManagerAsync(user.Id, item.ProjectId)))
                     {
-                        <a asp-action="Restore" asp-route-id="@item.Id">Restore</a>
-                    }
-                    else
-                    {
-                        <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
+                        <span>|</span>
+
+                        if (item.Archived)
+                        {
+                           
+                            <a asp-action="Restore" asp-route-id="@item.Id">Restore</a>
+                        }
+                        else
+                        {
+                            <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
+                        }
                     }
 
                 </td>
