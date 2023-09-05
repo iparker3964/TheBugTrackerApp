@@ -429,7 +429,7 @@ namespace TheBugTrackerApp.Services
 
             try
             {
-                //tickets = (await GetTicketByIdAsync(companyId)).Where(t => t.ProjectId == projectId).ToList();
+                tickets = (await GetAllTicketsByCompanyAsync(companyId)).Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).ToList();
 
                 return tickets;
             }
