@@ -21,6 +21,7 @@ namespace TheBugTrackerApp.Services.Interfaces
         public Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId,string role);
         public Task<Project> GetProjectByIdAsync(int projectId, int companyId);
         public Task<List<BTUser>> GetSubmittersOnProjectAsync(int projectId);
+        public Task<List<Project>> GetUnassignedProjectsAsync(int companyId);
         public Task<List<BTUser>> GetUsersNotOnProjectAsync(int projectId,int companyId);
         public Task<List<Project>> GetUserProjectsAsync(string userId);
         public Task<bool> IsAssignedProjectManagerAsync(string userId,int projectId);

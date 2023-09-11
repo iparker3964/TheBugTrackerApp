@@ -25,7 +25,8 @@ namespace TheBugTrackerApp.Controllers
         private readonly IBTLookupService _lookupService;
         private readonly IBTTicketService _ticketService;
         private readonly IBTFileService _fileService;
-        public TicketsController(ApplicationDbContext context,UserManager<BTUser> userManager, IBTProjectService projectService, IBTLookupService lookupService, IBTTicketService ticketService, IBTFileService fileService)
+        private readonly IBTTicketHistoryService _historyService;
+        public TicketsController(ApplicationDbContext context,UserManager<BTUser> userManager, IBTProjectService projectService, IBTLookupService lookupService, IBTTicketService ticketService, IBTFileService fileService, IBTTicketHistoryService historyService)
         {
             _context = context;
             _userManager = userManager;
@@ -33,6 +34,7 @@ namespace TheBugTrackerApp.Controllers
             _lookupService = lookupService;
             _ticketService = ticketService;
             _fileService = fileService;
+            _historyService = historyService;
         }
 
         // GET: Tickets
@@ -227,8 +229,11 @@ namespace TheBugTrackerApp.Controllers
                 ticket.TicketStatusId = (await _ticketService.LookupTicketStatusIdAsync(nameof(BTTicketStatus.New))).Value;
 
                 await _ticketService.AddNewTicketAsync(ticket);
-                
-                return RedirectToAction(nameof(Index));
+
+                Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id);
+                await _historyService.AddHistoryAsync(null,newTicket,user.Id);
+
+                return RedirectToAction(nameof(AllTickets));
             }
 
             if (User.IsInRole(nameof(Roles.Admin)))
@@ -281,6 +286,8 @@ namespace TheBugTrackerApp.Controllers
             {
                 BTUser user = await _userManager.GetUserAsync(User);
 
+                Ticket oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id);
+
                 try
                 {
                     ticket.Updated = DateTimeOffset.Now;
@@ -298,7 +305,11 @@ namespace TheBugTrackerApp.Controllers
                         throw;
                     }
                 }
+
+                Ticket newTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id);
+
                 //To-do add ticket history
+                await _historyService.AddHistoryAsync(oldTicket, newTicket,user.Id);
                 return RedirectToAction(nameof(Index));
             }
 

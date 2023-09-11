@@ -294,6 +294,33 @@ namespace TheBugTrackerApp.Services
                 throw;
             }
         }
+
+        public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId)
+        {
+            try
+            {
+                Ticket ticket = await _context.Tickets
+                                                .Include(t => t.DeveloperUser)
+                                                .Include(t => t.Project)
+                                                .Include(t => t.TicketPriority)
+                                                .Include(t => t.TicketStatus)
+                                                .Include(t => t.TicketType)
+                                                .AsNoTracking()
+                                                .FirstOrDefaultAsync(t => t.Id == ticketId);
+
+                return ticket;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("************************************");
+                Console.WriteLine("Error getting ticket as no tracking.");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("************************************");
+
+                throw;
+            }
+        }
+
         public async Task<TicketAttachment> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
         {
             try
